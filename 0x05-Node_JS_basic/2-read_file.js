@@ -1,46 +1,51 @@
 const fs = require('fs');
 
-function countStudents(path) {
-  try {
-    const data = fs.readFileSync(path, 'utf8');
+const parseStudentsByField = (dataList) => {
+  const labelsList = dataList[0].split(',');
+  const fieldIdx = labelsList.indexOf('field');
+  const firstNameIdx = labelsList.indexOf('firstname');
 
-    const lines = data.split('\n').filter((line) => line.trim() !== '');
+  const studentsByField = {};
+  let studentsCount = 0;
 
-    const header = lines.shift();
+  for (let i = 1; i < dataList.length; i += 1) {
+    if (dataList[i] === '') continue;
+    studentsCount += 1;
+    const studentList = dataList[i].split(',');
+    const fieldName = studentList[fieldIdx];
+    if (!studentsByField[fieldName]) studentsByField[fieldName] = [];
+    studentsByField[fieldName].push(studentList[firstNameIdx]);
+  }
 
-    if (!header) {
-      throw new Error('Cannot load the database');
-    }
+  return { studentsByField, studentsCount };
+};
 
-    const studentsByField = {};
-
-    lines.forEach((line) => {
-      const [firstname, lastname, age, field] = line.split(',');
-
-      if (field && firstname) {
-        if (!studentsByField[field]) {
-          studentsByField[field] = [];
-        }
-        studentsByField[field].push(firstname);
-      }
-    });
-
-    const totalStudents = Object.values(studentsByField).reduce(
-      (acc, students) => acc + students.length,
-      0
-    );
-    console.log(`Number of students: ${totalStudents}`);
-
-    for (const [field, students] of Object.entries(studentsByField)) {
+const printStudentsWithField = (studentsByField) => {
+  for (const key in studentsByField) {
+    if (Object.prototype.hasOwnProperty.call(studentsByField, key)) {
+      const firstNamesList = studentsByField[key];
+      const studentsNumber = firstNamesList.length;
+      const firstNamesStr = firstNamesList.join(', ');
       console.log(
-        `Number of students in ${field}: ${
-          students.length
-        }. List: ${students.join(', ')}`
+        `Number of students in ${key}: ${studentsNumber}. List: ${firstNamesStr}`
       );
     }
-  } catch (error) {
-    console.error('Cannot load the database');
   }
-}
+};
+
+const countStudents = (path) => {
+  try {
+    const data = fs.readFileSync(path, 'utf-8');
+    const dataList = data.split('\n');
+    const studentsData = parseStudentsByField(dataList);
+    const { studentsByField } = studentsData;
+    const { studentsCount } = studentsData;
+
+    console.log(`Number of students: ${studentsCount}`);
+    printStudentsWithField(studentsByField);
+  } catch (error) {
+    throw new Error('Cannot load the database');
+  }
+};
 
 module.exports = countStudents;
