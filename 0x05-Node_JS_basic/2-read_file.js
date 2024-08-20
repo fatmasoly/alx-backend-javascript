@@ -27,7 +27,7 @@ const printStudentsWithField = (studentsByField) => {
       const studentsNumber = firstNamesList.length;
       const firstNamesStr = firstNamesList.join(', ');
       console.log(
-        `Number of students in ${key}: ${studentsNumber}. List: ${firstNamesStr}`
+        `Number of students in ${key}: ${studentsNumber}. List: ${firstNamesStr}`,
       );
     }
   }
